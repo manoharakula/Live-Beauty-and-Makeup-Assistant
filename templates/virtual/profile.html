@@ -1,0 +1,16 @@
+
+{% extends "virtual/index.html"  %}
+{% include "virtual/base.html"  %}
+
+{% load static%}
+
+{% block container %}
+<h1>
+profile
+{{object.name}}
+</h1>
+{% endblock container %}
+<script>
+        var container = document.getElementById("imaegcontainer");
+    container.style.display = "block";
+</script>

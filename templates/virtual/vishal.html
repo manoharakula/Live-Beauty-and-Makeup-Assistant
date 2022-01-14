@@ -1,0 +1,168 @@
+<div class="container" *ngIf="panelIndex==0">
+
+    <div class="row">
+        <div class="col" *ngFor="let item of lipsDetails.lipstick;let i=index">
+            <div class="card" style="width: 18rem;" (click)='displayColourLipstick(i)'>
+                <img src="" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of
+                        the
+                        card's content.</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row" *ngIf="lipStickSelected.displayColour">
+            <div class="col" *ngFor="let colour of lipStickSelected.colourList;let a=index">
+                <div>
+                    <button class="dot" [ngStyle]="{'background-color':colour.colourName}"
+                        (click)="onColourClick(i)"></button>
+                </div>
+                <div *ngIf="displayColourProp">
+                    {{colour.colourName}}
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="panel">
+    <div class="nav nav-tabs" id="nav-tab" role="tabs">
+        <button class="nav-link active" onClick="lipstickPanel(this.id,0)" id="lipStick" data-bs-toggle="tab"
+            data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home"
+            aria-selected="true">Looks</button>
+        <button class="nav-link" onClick="lipstickPanel(this.id,1)" id="lipGloss" data-bs-toggle="tab"
+            data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home"
+            aria-selected="true">Lips</button>
+
+    </div>
+</nav>
+
+<div id="myDIV">
+    <div class="nav nav-tabs" id="nav-tab" role="tabs">
+        {% if panelIndex==0 %}
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <div class="card" style="width: 150px;" (click)='displayColourLipstick(i)'>
+
+                        <button class="nav-link" onClick="lipstickPanel(this.id)" id="Looks" data-bs-toggle="tab"
+                            data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home"
+                            aria-selected="true">{{ lipobject.name }}</button>
+                        <img src="media/{{lipobject.image}}" width="150" height="200" class="card-img-top" alt="...">
+                        <div class="card-body">
+                            <p class="card-text">Revlon</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div>
+                        <button class="dot" (click)="onColourClick(i)"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+F
+<script>
+    var panelIndex;
+    function lipstickPanel(clicked, index) {
+        this.panelIndex = index;
+        if (clicked == "Looks") {
+            var x = document.getElementById("myDIV");
+            x.style.display = "none";
+
+            console.log("clicked")
+
+        }
+        else if (clicked == "Lips") {
+            console.log("clicked")
+
+            var x = document.getElementById("myDIV");
+            x.style.display = "block";
+
+        }
+
+        else if (clicked == "Eyes") {
+            var x = document.getElementById("myDIV");
+            x.style.display = "none";
+
+            console.log("clicked")
+        }
+        else if (clicked == "Face") {
+            var x = document.getElementById("myDIV");
+            x.style.display = "none";
+            console.log("clicked")
+        }
+    }
+</script>
+
+
+<style type="text/css">
+    h1 {
+        color: green;
+    }
+
+    .xyz {
+        background-size: auto;
+        text-align: center;
+        padding-top: 100px;
+    }
+
+    .btn-circle.btn-sm {
+        width: 30px;
+        height: 30px;
+        padding: 6px 0px;
+        border-radius: 15px;
+        font-size: 8px;
+        text-align: center;
+    }
+
+    .btn-circle.btn-md {
+        width: 50px;
+        height: 50px;
+        padding: 7px 10px;
+        border-radius: 25px;
+        font-size: 10px;
+        text-align: center;
+    }
+
+    .btn-circle.btn-xl {
+        width: 70px;
+        height: 70px;
+        padding: 10px 16px;
+        border-radius: 35px;
+        font-size: 12px;
+        text-align: center;
+    }
+</style>

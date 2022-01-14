@@ -1,0 +1,753 @@
+{% load static%}
+
+<html>
+
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"> </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.117.1/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh@0.0.3"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl@2.0.0-rc.4/dist/tf-backend-webgl.es2017.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
+    <script async src="{% static 'extrafiles/opencv.js' %}" onload="onOpenCvReady();" type="text/javascript"></script>
+    <script  src="{% static 'extrafiles/triangulation.js' %}"  type="text/javascript"></script>
+</head>
+<header>
+    <div id="Header">
+        <h1 class="MainHeader">
+            ASYPHER VIRTUAL MAKEUP ASSISTANT
+        </h1>
+        <button class="meshbutton" onClick="meshclicked()">Mesh</button>
+    </div>
+</header>
+
+<body style="height: 100%;">
+    <div class="row mainpage">
+        <div class="column">
+            <nav class="mainpanel">
+                <div class="nav nav-tabs" id="nav-tab" role="tabs">
+                    <button class="nav-link button active mainbutton" onClick="myFunction(this.id)" id="Looks"
+                        data-bs-toggle="tab" data-bs-target="#nav-home " type="button" role="tab"
+                        aria-controls="nav-home" aria-selected="true">Looks</button>
+                    <button class="nav-link button mainbutton" onClick="myFunction(this.id)" id="Lips"
+                        data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab"
+                        aria-controls="nav-home" aria-selected="true">Lips</button>
+                    <button class="nav-link button mainbutton" onClick="myFunction(this.id)" id="Eyes"
+                        data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab"
+                        aria-controls="nav-home" aria-selected="true">Eyes</button>
+                    <button class="nav-link button mainbutton" onClick="myFunction(this.id)" id="Face"
+                        data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab"
+                        aria-controls="nav-home" aria-selected="true">Face</button>
+                </div>
+            </nav>
+            <div id="lipspage">
+                <nav class="panel">
+                    <div class="nav nav-tabs subclassnav" id="nav-tab" role="tabs">
+                        {% for lipobject in liplist %}
+                        <!-- <a href="{% url 'profile' forloop.counter0  %}" id = {{lipobject.name}} class="nav-link button"  type="button" role="tab">{{lipobject.name}}</a> -->
+                        <button class="nav-link button subbutton" onClick="Panel(this.id)" id={{lipobject.name}}
+                            class="nav-link button" type="button" role="tab">{{lipobject.name}}</button>
+                        {% endfor %}
+                    </div>
+                </nav>
+            </div>
+            <div id="eyespage">
+                <nav class="panel">
+                    <div class="nav button nav-tabs subclassnav" id="nav-tab" role="tabs">
+                        {% for eyesobject in eyeslist %}
+                        <!-- <a href="{% url 'profile' forloop.counter0  %}" id = {{lipobject.name}} class="nav-link button"  type="button" role="tab">{{lipobject.name}}</a> -->
+                        <button class="nav-link button subbutton" onClick="Panel(this.id)" id={{eyesobject.name}}
+                            class="nav-link button" type="button" role="tab">{{eyesobject.name}}</button>
+                        {% endfor %}
+                    </div>
+                </nav>
+            </div>
+            <div id="facepage">
+                <nav class="panel">
+                    <div class="nav button nav-tabs subclassnav" id="nav-tab" role="tabs">
+                        {% for faceobject in facelist %}
+                        <!-- <a href="{% url 'profile' forloop.counter0  %}" id = {{faceobject.name}} class="nav-link button"  type="button" role="tab">{{faceobject.name}}</a> -->
+                        <button class="nav-link button subbutton" onClick="Panel(this.id)" id={{faceobject.name}}
+                            class="nav-link button" type="button" role="tab">{{faceobject.name}}</button>
+                        {% endfor %}
+                    </div>
+                </nav>
+            </div>
+            <div id="lookspage">
+                <nav class="panel">
+                    <div class="nav button nav-tabs subclassnav" id="nav-tab" role="tabs">
+                        {% for looksobject in lookslist %}
+                        <button class="nav-link button subbutton" onClick="Panel(this.id)" id={{looksobject.name}}
+                            class="nav-link button" type="button" role="tab">{{looksobject.name}}</button>
+                        {% endfor %}
+                    </div>
+                </nav>
+            </div>
+            <div id="imagecontainer"></div>
+        </div>
+        <div class="column">
+            {% comment %} <button>Mesh</button> {% endcomment %}
+            <div class="containervideo">
+                <canvas class=canvasobject id="output" height="400px" width="300px"></canvas>
+                <canvas class=canvasobject id="detect" height="400px" width="300px"></canvas>
+                <canvas class=canvasobject id="opencvoutput" height="400px" width="300px"></canvas>
+                <video id="videoElement" playsinline style="
+                        -webkit-transform: scaleX(-1);
+                        transform: scaleX(-1);
+                        visibility: hidden;
+                        width: 400px;
+                        height: 300px;
+                        ">
+                </video>
+            </div>
+
+            <div class="slidecontainer">
+            <p>Opacity:</p>
+            <input type="range" min="20" max="70" value="40" class="slider" id="opacityslider">
+            </div>
+            <p id="errorblock"></p>
+
+        </div>
+
+    </div>
+</body>
+<footer class="parallax">
+
+</footer>
+
+</html>
+
+<script>
+    function onOpenCvReady() {
+        console.log("loaded")
+    }
+
+    var lipspage = document.getElementById("lipspage");
+    var eyespage = document.getElementById("eyespage");
+    var facepage = document.getElementById("facepage");
+    var lookspage = document.getElementById("lookspage");
+
+    lipspage.style.display = "none";
+    eyespage.style.display = "none";
+    facepage.style.display = "none";
+    lookspage.style.display = "none";
+
+    var selectedpage = "none";
+
+    function myFunction(clicked) {
+        if (selectedpage != "none") {
+
+            document.getElementById(selectedpage).style.display = "none"
+            document.getElementById("imagecontainer").style.display = "none"
+        }
+        if (clicked == "Looks") {
+            lookspage.style.display = "block";
+            selectedpage = "lookspage"
+
+        }
+        else if (clicked == "Lips") {
+            lipspage.style.display = "block";
+            selectedpage = "lipspage"
+        }
+
+        else if (clicked == "Eyes") {
+            eyespage.style.display = "block";
+            selectedpage = "eyespage"
+        }
+        else if (clicked == "Face") {
+            facepage.style.display = "block";
+            selectedpage = "facepage"
+        }
+    }
+</script>
+
+<script>
+    var colors, x, name;
+    //console.log("index.html")
+    let index = 0
+    const imagecontainer = document.getElementById("imagecontainer")
+    function Panel(clickedid) {
+
+
+        //  console.log(clickedid)
+        callpost(clickedid)
+    }
+    function callpost(inputname) {
+        name = inputname
+        //    console.log("callpost")
+        document.getElementById("imagecontainer").style.display = "block"
+        colors = []
+        x = ""
+        $.ajax({
+            type: 'GET',
+            // url:'/subclass/{{liplist.1.name}}',
+            url: '/subclass/' + selectedpage + "/" + name,
+            success: function (response) {
+                //console.log("sfahjk")
+                const object = response.object
+                //console.log(object)
+                //console.log(object[0].name)
+                const imgurl = object[0].image
+                //console.log(object[0].colors)
+
+                for (const [key, value] of Object.entries(object[0].colors)) {
+                    colors.push(value.colorcode)
+                    x += `<button class="btn btn-primary btn-circle btn-sm" onClick ="onColourClick(this.id)" id = "${value.colorcode}" style="background-color: ${value.colorcode};border-color:${value.colorcode};" ></button>`
+
+                }
+                console.log(colors)
+                imagecontainer.innerHTML = `<div id="lipStick">
+                                                <div class="nav nav-tabs" id="nav-tab" role="tabs">
+                                                    <div class="container" id=  panelIndex>
+                                                        <div class="row">
+                                                            <div class="col">
+                                                                <div class="card" style="width: 150px;" (click)='displayColourLipstick(i)'>
+                                                                    <img src="${imgurl}" width="150" height="230" class="card-img-top" alt="...">
+                                                                    <div class="card-body">
+                                                                        <p class="card-text">Revlon</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>                           
+                                                        <div class="xyz">`
+                    + x +
+                    `</div>
+                                                    </div>
+                                                </div>
+                                            </div>`
+            },
+            error: function (error) {
+                //console.log(error)
+            }
+
+        })
+    }
+</script>
+
+
+<script>
+    var partname;
+    var selectedcolorcode = "none"
+    function onColourClick(code) {
+        partname = name
+        // console.log("color clicked", code)
+        selectedcolorcode = code;
+    }
+    var video_width = 300;
+    var video_height = 400;
+
+
+    var socket = new WebSocket("wss://www.asypher.tech:12345/echo");
+    {% comment %} var socket = new WebSocket('ws://localhost:8099/websocket') {% endcomment %}
+
+    function isMobile() {
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        const isiOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        return isAndroid || isiOS;
+    }
+
+    function drawPath(ctx, points, closePath) {
+        const region = new Path2D();
+        region.moveTo(points[0][0], points[0][1]);
+        for (let i = 1; i < points.length; i++) {
+            const point = points[i];
+            region.lineTo(point[0], point[1]);
+        }
+
+        if (closePath) {
+            region.closePath();
+        }
+        ctx.stroke(region);
+    }
+
+    let model, ctx, videoWidth, videoHeight, video, canvas, facemodel;
+
+
+
+    const VIDEO_SIZE = 400;
+    const mobile = isMobile();
+    const state = {
+        backend: 'webgl',
+        maxFaces: 2,
+        triangulateMesh: false
+    };
+
+    async function setupCamera() {
+        video = document.getElementById('videoElement');
+        const stream = await navigator.mediaDevices.getUserMedia({
+            'audio': false,
+            'video': {
+                facingMode: 'user',
+                width: mobile ? video_width : video_width,
+                height: mobile ? video_height : video_height
+            },
+        });
+        video.srcObject = stream;
+
+        return new Promise((resolve) => {
+            video.onloadedmetadata = () => {
+                resolve(video);
+            };
+        });
+    }
+
+
+
+    var triangulateMesh = false;
+    var facemeshplot = false;
+    var flip ;
+    var ismesh = false
+    if (isMobile()) {
+        flip = true;
+    }
+    let draw_canvas = document.getElementById('detect');
+    let draw_context = draw_canvas.getContext('2d');
+    let image = new Image();
+
+    var partcolorsdic = {
+        "lips": "none",
+        "Crease": "none",
+        "LowerLashline": "none",
+        "EyeBrows": "none"
+    }
+    function meshclicked()
+    {
+        console.log("meshclicked")
+        if(ismesh == false)
+        {
+            ismesh = true
+        }
+        else{
+            ismesh = false
+        }
+    }
+
+    var loopcounter = 0;
+    var imagereceived = 0
+    async function renderPrediction() {
+        console.log(ismesh)
+        var rendertime = "each render";
+        loopcounter += 1;
+
+        if (true) {
+            const predictions = await model.estimateFaces(video);
+            
+                if (ismesh == true) {
+                    triangulateMesh =  true
+                    ctx.drawImage(video, 0, 0, videoWidth, videoHeight, 0, 0, canvas.width, canvas.height);
+                if (predictions.length > 0) {
+                    predictions.forEach(prediction => {
+                        const keypoints = prediction.scaledMesh;
+                            console.log("plotting",ismesh)
+                            if (triangulateMesh) {
+                                for (let i = 0; i < TRIANGULATION.length / 3; i++) {
+                                    const points = [
+                                        TRIANGULATION[i * 3], TRIANGULATION[i * 3 + 1],
+                                        TRIANGULATION[i * 3 + 2]
+                                    ].map(index => keypoints[index]);
+
+                                    drawPath(ctx, points, true);
+                                }
+                            }
+                            else {
+                                for (let i = 0; i < keypoints.length; i++) {
+                                    const x = keypoints[i][0];
+                                    const y = keypoints[i][1];
+
+                                    ctx.beginPath();
+                                    ctx.arc(x, y, 1 /* radius */, 0, 2 * Math.PI);
+                                    ctx.fill();
+                                }
+                            }
+
+
+                        })};
+                }
+
+            
+            
+            if (selectedcolorcode == "none" && ismesh == false)   {
+                ctx.drawImage(
+                    video, 0, 0, videoWidth, videoHeight, 0, 0, canvas.width, canvas.height);
+            }
+
+            if (selectedcolorcode != "none" && ismesh == false) {
+                // if (imagereceived != 0) {
+                    draw_context.drawImage(
+                        video, 0, 0, videoWidth, videoHeight);
+                // }
+                if (predictions.length > 0) {
+                    predictions.forEach(prediction => {
+                        const keypoints = prediction.scaledMesh;
+                            if (partname != "") {
+                                partcolorsdic[partname] = selectedcolorcode
+                                // console.log("name=== " , partname)
+                                //  console.log(partcolorsdic)
+                            }
+                            var t1 = "on send"
+                            // console.time(t1)
+                            data = draw_canvas.toDataURL('image/jpeg', 0.5)
+                            // ctx.drawImage(image, 0, 0, video_width, video_height);
+                            {% comment %} console.time(t1) {% endcomment %}
+                            
+
+                            if(socket.readyState === WebSocket.OPEN)
+                            {
+                                var op = document.getElementById('opacityslider').value 
+                            //     console.log("h,w ==" , video_height ,video_width ,videoWidth, videoHeight,canvas.width, canvas.height , op)
+                                sendMessage(JSON.stringify({
+                                'image': data,
+                                'keypoints': keypoints,
+                                'color': selectedcolorcode,
+                                'opacity': op,
+                                'videowidth': video_width,
+                                'videoheight': video_height,
+                                'part': partcolorsdic
+                            }));
+                            }
+                            else{
+                                ctx.drawImage(video, 0, 0, videoWidth, videoHeight, 0, 0, canvas.width, canvas.height);
+
+                            }
+                            {% comment %} console.timeEnd(t1) {% endcomment %}
+
+                            socket.onmessage = function (e) {
+                                image.onload = function () {
+                                    var t = "on message"
+                                //    console.time(t)
+                                    ctx.drawImage(image, 0, 0,  videoWidth, videoHeight, 0, 0, canvas.width, canvas.height);
+                                    imagereceived = 1
+                            //           console.timeEnd(t)
+
+
+                                };
+
+                                image.src = e.data;
+
+
+                            };
+                        
+                    }
+                    );
+                }
+
+            }
+        }
+        requestAnimationFrame(renderPrediction);
+        // var refreshId = setInterval(function () {
+        //     requestAnimationFrame(renderPrediction);
+        // }, 15);
+        //console.timeEnd(rendertime);
+    };
+
+    document.getElementById("detect").style.display = "none"
+    function sendMessage(message) 
+    {
+            document.getElementById("output").style.display = "none"
+            document.getElementById("opencvoutput").style.display = "block"
+            socket.send(message);
+    };
+    async function main() {
+        await tf.setBackend(state.backend);
+        await setupCamera();
+        video.play();
+        videoWidth = video.videoWidth;
+        videoHeight = video.videoHeight;
+        video.width = videoWidth;
+        video.height = videoHeight;
+
+        canvas = document.getElementById('output');
+        canvas.width = videoWidth;
+        canvas.height = videoHeight;
+
+        ctx = canvas.getContext('2d');
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.fillStyle = '#32EEDB';
+        ctx.strokeStyle = '#32EEDB';
+        ctx.lineWidth = 0.5;
+
+        model = await facemesh.load({ maxFaces: 1, detectionConfidence: 0.7 });
+        facemodel = await blazeface.load();
+        renderPrediction();
+    };
+
+    function sendMessage(message) {
+        socket.send(message);
+    }
+
+    main();
+
+</script>
+
+
+
+
+
+
+<style>
+    .xyz {
+        padding-top: 20px;
+        background-size: auto;
+        margin-bottom: 60px;
+    }
+
+    .btn-circle.btn-sm {
+        width: 36px;
+        height: 36px;
+        padding: 7px 10px;
+        border-radius: 18px;
+        font-size: 8px;
+        text-align: center;
+    }
+
+    .parallax {
+        /* The image used */
+        background-image: url(/media/images/bg2.jpg);
+
+        /* Full height */
+        height: 50%;
+
+        /* Create the parallax scrolling effect */
+        background-attachment: fixed;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+
+    .row {
+        display: flex;
+    }
+
+    .row.mainpage {
+        height: 600px;
+    }
+
+    .column {
+        flex: 50%;
+    }
+
+    .dot {
+        height: 25px;
+        width: 25px;
+        background-color: #bbb;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .containervideo {
+        padding: 20%;
+        width: 300px;
+        height: 400px;
+        display: inline-block;
+
+    }
+
+    .videoElement {
+        width: 300px;
+        height: 400px;
+        background-color: #666;
+    }
+
+    .button {
+        background-color: white;
+        border: none;
+        color: black;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 20px;
+    }
+
+    .meshbutton {
+        background-color: white;
+        border: none;
+        color: black;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 20px;
+        overflow: auto;
+        white-space: nowrap;
+        margin-left:80%;
+
+    }
+
+
+    .card {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    button.active>button {
+        background-color: green;
+    }
+
+    .subbutton {
+        width: 30%;
+    }
+
+    .mainpanel {
+        border-bottom: 3px solid #000000;
+        /* margin-left: 50px;
+    margin-top: 50px; */
+    }
+
+    .nav-tabs .nav-item.show .nav-link,
+    .nav-tabs .nav-link.active {
+        background: moccasin;
+        border-bottom: 2px solid green;
+    }
+
+    .subclassnav .nav-tabs .nav-item.show .nav-link,
+    .nav-tabs .nav-link.active {
+        background: moccasin;
+        border-bottom: 2px solid green
+    }
+
+    .MainHeader {
+        text-align: left;
+        margin-left: 30px;
+        font-family: fantasy;
+        margin-top: 11px;
+    }
+
+        .Company {
+        text-align: left;
+        margin-left: 30px;
+        font-family: fantasy;
+        margin-top: 11px;
+    }
+
+    .panel {
+        border-bottom: 1px solid gray;
+        margin-top: 20px;
+    }
+
+    .row.mainpage {
+        margin-left: 20px;
+        margin-top: 20px;
+    }
+
+    .nav-tabs {
+        width: 100%;
+    }
+
+    .mainbutton {
+        width: 25%;
+    }
+
+    .containervideo {
+        padding: 5%;
+        width: 300px;
+        height: 400px;
+        margin-top: 100px;
+        display: inline-block;
+        background-color: darkslategray;
+    }
+
+        .slidecontainer {
+    width: 300px;
+    margin:30px;
+    margin-top : 50px;
+    }
+
+    .slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 25px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    }
+
+    .slider:hover {
+    opacity: 1;
+    }
+
+    .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    background: #04AA6D;
+    cursor: pointer;
+    }
+
+    .slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    background: #04AA6D;
+    cursor: pointer;
+    }
+
+    @media only screen and (max-device-width: 1366px) {
+        .parallax {
+            height: 50%;
+            background-attachment: scroll;
+        }
+
+
+        .row.mainpage {
+            height: 1000px;
+        }
+
+        .MainHeader {
+            margin-top: 100px;
+        }
+
+        .canvasobject {
+            width: 620px;
+            height: 800px;
+            margin-right: 50px;
+        }
+
+        .button {
+            font-size: 30px;
+        }
+
+        .subbutton {
+            font-size: 25px;
+        }
+
+        .containervideo {
+            width: 450px;
+            height: 700px;
+        }
+
+        .card-img-top {
+            width: 200px;
+            height: 350px;
+        }
+
+        .card-text {
+            font-size: 25px;
+        }
+
+
+        .btn-circle.btn-sm {
+            width: 60px;
+            height: 60px;
+            padding: 7px 10px;
+            border-radius: 30px;
+            font-size: 8px;
+            text-align: center;
+        }
+
+        
+        .slidecontainer {
+    width: 400px;
+    margin-top:100px;
+    }
+
+    }
+</style>

@@ -1,0 +1,115 @@
+
+
+{% extends "virtual/base.html"  %}
+
+{% load static%}
+
+{% block content %}
+<nav class="panel">
+    <div class="nav nav-tabs" id="nav-tab" role="tabs">
+        {% for lipobject in liplist %}
+        <a href="{% url 'profile' forloop.counter0  %}" id = {{lipobject.name}} class="nav-link"  type="button" role="tab">{{lipobject.name}}</a>
+        {% endfor %}
+    </div>
+</nav>
+<div id = "imagecontainer">
+    {% block container %}
+    {% endblock container %}    
+</div>
+
+<!-- <a href="{% url 'profile' 0 %}">profile</a> -->
+
+
+<!-- 
+<div id="activelipobject" style="width: 150px;">
+    <div class="nav nav-tabs" id="nav-tab" role="tabs">
+        <div class="container" id=  panelIndex>
+            <div class="row">
+                <div class="col">
+                    <div class="card" style="width: 150px;" (click)='displayColourLipstick(i)'>
+                        <img src="" id  = "imagesrc" width="150" height="200" class="card-img-top" alt="...">
+                        <div class="card-body">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% for colors in liplist..colors.all %}
+            <div class="row" id = "colorsrow">
+                <div class="col">
+                    <div>
+                        <button class="dot" (click)="onColourClick(i)"></button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div> -->
+
+
+<script>
+    var data = JSON.parse("{{lipjson|escapejs}}");
+    
+    // var container = document.getElementById("activelipobject");
+    // container.style.display = "none";
+
+    var container = document.getElementById("imaegcontainer");
+    container.style.display = "none";
+
+    function displayColourLipstick(index){
+        console.log(index)
+    }
+    function lipstickPanel(clicked, index) {
+        console.log(clicked,index)
+        clickedtab = index;
+        console.log("list == ",data[index].fields.image)
+        document.getElementById("imagesrc").src = "media/"+data[index].fields.image;
+
+        var container = document.getElementById("activelipobject");
+        container.style.display = "block";   
+
+        // document.getElementById("print").innerHTML = clicked+index
+        // if (index == 0) {
+        //     var x = document.getElementById("activelipobject");
+        //     x.style.display = "block";
+            
+        //     var y = document.getElementById("lipGloss");
+        //     y.style.display = "none";
+
+
+        //     console.log("clicked")
+        // }
+        // else if (index == 1) {
+        //     var x = document.getElementById("activelipobject");
+        //     x.style.display = "none";
+            
+        //     var y = document.getElementById("lipGloss");
+        //     y.style.display = "block";
+
+
+        //     console.log("clicked")
+        // }
+    }
+</script>
+
+
+<style>
+        .dot {
+    height: 25px;
+    width: 25px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  a.button {
+    -webkit-appearance: button;
+    -moz-appearance: button;
+    appearance: button;
+
+    text-decoration: none;
+    color: initial;
+}
+</style>
+
+{%  endblock %}

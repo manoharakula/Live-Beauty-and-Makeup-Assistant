@@ -1,0 +1,136 @@
+{% extends "virtual/base.html"  %}
+
+{% load static%}
+
+{% block lipscontent %}
+<nav class="panel">
+    lipscontent
+    <div class="nav button nav-tabs" id="nav-tab" role="tabs">
+        {% for lipobject in liplist %}
+        <!-- <a href="{% url 'profile' forloop.counter0  %}" id = {{lipobject.name}} class="nav-link button"  type="button" role="tab">{{lipobject.name}}</a> -->
+        <button class="nav-link button" onClick="lipsPanel(this.id)" id = {{lipobject.name}} class="nav-link button"  type="button" role="tab">{{lipobject.name}}</button>
+        {% endfor %}
+    </div>
+</nav>
+{%  endblock lipscontent %}
+
+
+{% block lookscontent %}
+<nav class="panel">
+    lookscontent
+    <div class="nav button nav-tabs" id="nav-tab" role="tabs">
+        {% for lipobject in liplist %}
+        <!-- <a href="{% url 'profile' forloop.counter0  %}" id = {{lipobject.name}} class="nav-link button"  type="button" role="tab">{{lipobject.name}}</a> -->
+        <button class="nav-link button" onClick="lipsPanel(this.id)" id = {{lipobject.name}} class="nav-link button"  type="button" role="tab">{{lipobject.name}}</button>
+        {% endfor %}
+    </div>
+</nav>
+{%  endblock lookscontent %}
+
+
+
+{% block eyescontent %}
+<nav class="panel">
+    eyescontent
+    <div class="nav button nav-tabs" id="nav-tab" role="tabs">
+        {% for lipobject in liplist %}
+        <!-- <a href="{% url 'profile' forloop.counter0  %}" id = {{lipobject.name}} class="nav-link button"  type="button" role="tab">{{lipobject.name}}</a> -->
+        <button class="nav-link button" onClick="lipsPanel(this.id)" id = {{lipobject.name}} class="nav-link button"  type="button" role="tab">{{lipobject.name}}</button>
+        {% endfor %}
+    </div>
+</nav>
+{%  endblock eyescontent %}
+
+
+
+{% block facecontent %}
+<nav class="panel">
+    facecontent
+    <div class="nav button nav-tabs" id="nav-tab" role="tabs">
+        {% for lipobject in liplist %}
+        <!-- <a href="{% url 'profile' forloop.counter0  %}" id = {{lipobject.name}} class="nav-link button"  type="button" role="tab">{{lipobject.name}}</a> -->
+        <button class="nav-link button" onClick="lipsPanel(this.id)" id = {{lipobject.name}} class="nav-link button"  type="button" role="tab">{{lipobject.name}}</button>
+        {% endfor %}
+    </div>
+</nav>
+{%  endblock facecontent %}
+
+
+
+<div id = "imagecontainer"></div>
+<script>
+    var colors,x;
+    console.log("index.html")
+    let index = 0
+    const imagecontainer = document.getElementById("imagecontainer")
+    function lipsPanel(clickedid){
+        console.log(clickedid)
+        callpost(clickedid)
+    }
+    function callpost(name)
+    {
+        console.log(name)
+        colors = []
+        x = ""
+        $.ajax({
+            type: 'GET',
+            // url:'/subclass/{{liplist.1.name}}',
+            url:'/subclass/'+ selectedpage + name,
+            success:function(response)
+            {
+                console.log("sfahjk")
+                const object = response.object
+                console.log(object)
+                console.log(object[0].name)
+                const imgurl = object[0].image
+                console.log(object[0].colors)
+
+                for (const [key, value] of Object.entries(object[0].colors)) {
+                    colors.push(value.colorcode)
+                    x +=  `<button class="btn btn-primary btn-circle btn-sm" onClick ="onColourClick(this.id)" id = "${value.colorcode}" style="background-color: ${value.colorcode};border-color:${value.colorcode};" ></button>`
+
+                }
+                console.log(colors)
+                imagecontainer.innerHTML = `<div id="lipStick">
+                                                <div class="nav nav-tabs" id="nav-tab" role="tabs">
+                                                    <div class="container" id=  panelIndex>
+                                                        <div class="row">
+                                                            <div class="col">
+                                                                <div class="card" style="width: 150px;" (click)='displayColourLipstick(i)'>
+                                                                    <img src="${imgurl}" width="150" height="230" class="card-img-top" alt="...">
+                                                                    <div class="card-body">
+                                                                        <p class="card-text">Revlon</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>                           
+                                                        <div class="xyz">`
+                                                            +x+
+                                                      `</div>
+                                                    </div>
+                                                </div>
+                                            </div>`
+            },
+            error: function(error)
+            {
+                console.log(error)
+            }
+
+        })
+    }
+</script>
+
+<style>
+    .xyz {
+            padding-top: 20px;
+            background-size: auto;
+        }
+        .btn-circle.btn-sm {
+            width: 36px;
+            height: 36px;
+            padding: 7px 10px;
+            border-radius: 18px;
+            font-size: 8px;
+            text-align: center;
+        }
+</style>
